@@ -17,6 +17,9 @@ EOM
 # Ask the user to enter the command they want to execute
 command="bash -c '$commands'"
 
+# Initialize an array to store the executed containers
+executed_containers=()
+
 # Ask if they want to execute in all containers or customize
 execute_in_all=$(whiptail --yesno "Do you want to execute the command in all containers?" 10 60 --title "Execute in All" 3>&1 1>&2 2>&3)
 
@@ -25,6 +28,8 @@ if [ $? -eq 0 ]; then
     echo "Executing commands in all containers..."
     for CTID in $(pct list | awk 'NR>1 {print $1}'); do
         pct exec $CTID -- bash -c "$commands"
+        NAME=$(pct list | awk -v id=$CTID '$1 == id {print $3}')
+        executed_containers+=("$CTID $NAME")
     done
 else
     # Get the list of LXC containers (ID and name)
@@ -52,8 +57,25 @@ else
         for CTID in $selected; do
             echo "Executing commands in Container $CTID..."
             pct exec $CTID -- bash -c "$commands"
+            NAME=$(pct list | awk -v id=$CTID '$1 == id {print $3}')
+            executed_containers+=("$CTID $NAME")
         done
     else
         echo "No containers were selected."
     fi
+fi
+
+# Clear the screen
+clear
+
+# Print the summary table if there are executed containers
+if [ ${#executed_containers[@]} -gt 0 ]; then
+    echo "Summary of executed commands:"
+    printf "%-10s %-20s\n" "Container ID" "Container Name"
+    printf "%-10s %-20s\n" "------------" "--------------"
+    for container in "${executed_containers[@]}"; do
+        printf "%-10s %-20s\n" $(echo $container)
+    done
+else
+    echo "No containers were selected."
 fi
