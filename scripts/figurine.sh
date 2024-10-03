@@ -8,6 +8,7 @@ mv deploy/figurine /usr/local/bin/
 rm -r deploy/
 rm figurine_linux_amd64_v1.3.0.tar.gz
 echo '#!/bin/bash' > /etc/profile.d/figurine.sh
+echo 'clear' >> /etc/profile.d/figurine.sh
 echo 'echo ""' >> /etc/profile.d/figurine.sh
 echo '/usr/local/bin/figurine -f "3d.flf" \$(hostname)' >> /etc/profile.d/figurine.sh
 echo 'echo ""' >> /etc/profile.d/figurine.sh
